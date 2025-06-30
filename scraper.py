@@ -8,7 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
-import chromedriver_autoinstaller
+import undetected_chromedriver.v2 as uc
 
 def convert_to_selenium_cookie(cookie):
     return {
@@ -24,17 +24,13 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
     results = []
 
     # Setup Chrome options
-    options = Options()
-    options.add_argument("--disable-blink-features=AutomationControlled")
-    options.add_argument("--start-maximized")
-    # options.add_argument('--headless=new')
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
+    options = uc.ChromeOptions()
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--lang=ja-JP")
-    options.add_argument("--headless")  # Required for server environments
 
-    chromedriver_autoinstaller.install()
-    driver = webdriver.Chrome(options=options)
+    driver = uc.Chrome(options=options)
     try:
         driver.get("https://www.amazon.co.jp/s?k=%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3")
         time.sleep(3)

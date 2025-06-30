@@ -10,16 +10,15 @@ from pyppeteer import chromium_downloader
 
 
 async def download_chromium():
-    revision = chromium_downloader.REVISION
     if not os.path.exists(chromium_downloader.chromium_executable()):
         print("Chromium not found. Downloading...")
-        await chromium_downloader.download_chromium(revision)
+        await chromium_downloader.download_chromium()
 
 def ensure_chromium_downloaded():
     path = chromium_downloader.chromium_executable()
     if not os.path.exists(path):
         asyncio.get_event_loop().run_until_complete(download_chromium())
-    return chromium_downloader.chromium_executable()
+    return path
 
 def convert_to_selenium_cookie(cookie):
     return {

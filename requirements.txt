@@ -1,5 +1,6 @@
-Flask
-gunicorn
-selenium
-undetected-chromedriver
-pyppeteer
+Flask==3.1.1
+gunicorn==23.0.0
+selenium==4.34.0
+undetected-chromedriver==3.5.5
+pyppeteer==1.0.2
+requests==2.32.4

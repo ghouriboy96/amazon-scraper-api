@@ -1,21 +1,25 @@
 import time
 import re
 import os
-import pyppeteer
-from pyppeteer import chromium_downloader
+import asyncio
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import undetected_chromedriver as uc
+import undetected_chromedriver.v2 as uc
+from pyppeteer import chromium_downloader
+
+
+async def download_chromium():
+    revision = chromium_downloader.REVISION
+    if not os.path.exists(chromium_downloader.chromium_executable()):
+        print("Chromium not found. Downloading...")
+        await chromium_downloader.download_chromium(revision)
 
 def ensure_chromium_downloaded():
     path = chromium_downloader.chromium_executable()
-    if not path or not os.path.exists(path):
-        print("Chromium not found. Downloading...")
-        pyppeteer.install()  # This will download Chromium
-        path = chromium_downloader.chromium_executable()
-    return path
-
+    if not os.path.exists(path):
+        asyncio.get_event_loop().run_until_complete(download_chromium())
+    return chromium_downloader.chromium_executable()
 
 def convert_to_selenium_cookie(cookie):
     return {

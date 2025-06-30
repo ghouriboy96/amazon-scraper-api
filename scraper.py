@@ -8,6 +8,15 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc
 
+def ensure_chromium_downloaded():
+    path = chromium_downloader.chromium_executable()
+    if not path or not os.path.exists(path):
+        print("Chromium not found. Downloading...")
+        pyppeteer.install()  # This will download Chromium
+        path = chromium_downloader.chromium_executable()
+    return path
+
+
 def convert_to_selenium_cookie(cookie):
     return {
         "name": cookie["name"],
@@ -22,13 +31,14 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
     results = []
 
     # Download chromium and get binary path
-    chromium_path = chromium_downloader.chromium_executable()
+    chromium_path = ensure_chromium_downloaded()
 
     options = uc.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--lang=ja-JP")
+    options.binary_location = chromium_path
 
     driver = uc.Chrome(headless=True, options=options)
 

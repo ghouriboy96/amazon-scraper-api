@@ -1,10 +1,9 @@
-# scraper.py
 import time
 import re
-from selenium import webdriver
+import os
+import pyppeteer
+from pyppeteer import chromium_downloader
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc
@@ -22,7 +21,9 @@ def convert_to_selenium_cookie(cookie):
 def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cookies):
     results = []
 
-    # Setup Chrome options
+    # Download chromium and get binary path
+    chromium_path = chromium_downloader.chromium_executable()
+
     options = uc.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
@@ -30,6 +31,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
     options.add_argument("--lang=ja-JP")
 
     driver = uc.Chrome(headless=True, options=options)
+
     try:
         driver.get("https://www.amazon.co.jp/s?k=%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3")
         time.sleep(3)
@@ -40,9 +42,8 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
                 continue
         driver.refresh()
         time.sleep(5)
-    except Exception as e:
+    except Exception:
         pass
-        # print("Error loading cookies:", e)
 
     for i, price in enumerate(Min_price_list):
         try:
@@ -58,7 +59,6 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
 
     for i, asin in enumerate(asin_list):
         product_url = f"https://www.amazon.co.jp/s?k={asin}"
-        # print(f"\n🔄 Scraping ASIN: {asin}")
         driver.get(product_url)
 
         try:
@@ -72,7 +72,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
                 })
                 continue
         except:
-            pass  # In case .s-no-outline doesn't exist
+            pass
 
         try:
             product = WebDriverWait(driver, 10).until(
@@ -142,7 +142,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
         price_matched = False
 
         if Min_price_list[i] <= price <= Max_price_list[i] and asin_found:
-            price_matched = True #send line notification
+            price_matched = True
 
         results.append({
             "ASIN": asin,
@@ -152,8 +152,6 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
             "status": asin_found,
             "price matched": price_matched
         })
-
-        # print(f"✅ {asin} - {title} - ¥{price}")
 
     driver.quit()
     return results

@@ -2,3 +2,4 @@ Flask
 gunicorn
 selenium
 undetected-chromedriver
+pyppeteer

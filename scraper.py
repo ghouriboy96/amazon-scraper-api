@@ -7,7 +7,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import undetected_chromedriver.v2 as uc
+import undetected_chromedriver as uc
 
 def convert_to_selenium_cookie(cookie):
     return {
@@ -29,7 +29,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--lang=ja-JP")
 
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome(headless=True, options=options)
     try:
         driver.get("https://www.amazon.co.jp/s?k=%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3")
         time.sleep(3)

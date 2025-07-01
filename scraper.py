@@ -8,20 +8,20 @@ from selenium.webdriver.support import expected_conditions as EC
 import undetected_chromedriver as uc
 from pyppeteer import chromium_downloader
 
-
-def download_chromium():
+# Async download of Chromium using pyppeteer
+async def download_chromium():
     if not os.path.exists(chromium_downloader.chromium_executable()):
         print("Chromium not found. Downloading...")
-        chromium_downloader.download_chromium()
+        await chromium_downloader.download_chromium()
 
-
+# Blocking call to ensure Chromium is downloaded
 def ensure_chromium_downloaded():
     path = chromium_downloader.chromium_executable()
     if not os.path.exists(path):
-        download_chromium()
+        asyncio.run(download_chromium())
     return path
 
-
+# Convert cookies into Selenium-friendly format
 def convert_to_selenium_cookie(cookie):
     return {
         "name": cookie["name"],
@@ -32,11 +32,10 @@ def convert_to_selenium_cookie(cookie):
         "expiry": int(cookie["expirationDate"]) if "expirationDate" in cookie else None
     }
 
-
 def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cookies):
     results = []
 
-    # Download chromium and get binary path
+    # Ensure Chromium is downloaded
     chromium_path = ensure_chromium_downloaded()
 
     options = uc.ChromeOptions()
@@ -44,9 +43,9 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--lang=ja-JP")
-    options.binary_location = chromium_path
+    options.binary_location = chromium_path  # Set binary path for headless Chrome
 
-    driver = uc.Chrome(headless=True, options=options)
+    driver = uc.Chrome(options=options)
 
     try:
         driver.get("https://www.amazon.co.jp/s?k=%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3")

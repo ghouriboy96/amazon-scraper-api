@@ -9,16 +9,18 @@ import undetected_chromedriver as uc
 from pyppeteer import chromium_downloader
 
 
-async def download_chromium():
+def download_chromium():
     if not os.path.exists(chromium_downloader.chromium_executable()):
         print("Chromium not found. Downloading...")
-        await chromium_downloader.download_chromium()
+        chromium_downloader.download_chromium()
+
 
 def ensure_chromium_downloaded():
     path = chromium_downloader.chromium_executable()
     if not os.path.exists(path):
-        asyncio.get_event_loop().run_until_complete(download_chromium())
+        download_chromium()
     return path
+
 
 def convert_to_selenium_cookie(cookie):
     return {
@@ -29,6 +31,7 @@ def convert_to_selenium_cookie(cookie):
         "secure": cookie.get("secure", False),
         "expiry": int(cookie["expirationDate"]) if "expirationDate" in cookie else None
     }
+
 
 def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cookies):
     results = []

@@ -22,12 +22,6 @@ def scrape():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-# problems
-#1. i need to upload on render free tier 
-#2. i need github account for it also 
-#3. 
+    app.run(host='0.0.0.0', port=5000)
 
 

@@ -1,27 +1,14 @@
+# scraper.py
 import time
 import re
-import os
-import asyncio
+from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import undetected_chromedriver as uc
-from pyppeteer import chromium_downloader
+from webdriver_manager.chrome import ChromeDriverManager
 
-# Async download of Chromium using pyppeteer
-async def download_chromium():
-    if not os.path.exists(chromium_downloader.chromium_executable()):
-        print("Chromium not found. Downloading...")
-        await chromium_downloader.download_chromium()
-
-# Blocking call to ensure Chromium is downloaded
-def ensure_chromium_downloaded():
-    path = chromium_downloader.chromium_executable()
-    if not os.path.exists(path):
-        asyncio.run(download_chromium())
-    return path
-
-# Convert cookies into Selenium-friendly format
 def convert_to_selenium_cookie(cookie):
     return {
         "name": cookie["name"],
@@ -35,17 +22,17 @@ def convert_to_selenium_cookie(cookie):
 def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cookies):
     results = []
 
-    # Ensure Chromium is downloaded
-    chromium_path = ensure_chromium_downloaded()
-
-    options = uc.ChromeOptions()
-    options.add_argument("--headless")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
+    # Setup Chrome options
+    options = Options()
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--start-maximized")
+    # options.add_argument('--headless=new')
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--lang=ja-JP")
-    options.binary_location = chromium_path  # Set binary path for headless Chrome
+    options.add_argument("--headless")  # Required for server environments
 
-    driver = uc.Chrome(options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
     try:
         driver.get("https://www.amazon.co.jp/s?k=%E3%82%A4%E3%83%A4%E3%83%9B%E3%83%B3")
@@ -57,8 +44,9 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
                 continue
         driver.refresh()
         time.sleep(5)
-    except Exception:
+    except Exception as e:
         pass
+        # print("Error loading cookies:", e)
 
     for i, price in enumerate(Min_price_list):
         try:
@@ -74,6 +62,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
 
     for i, asin in enumerate(asin_list):
         product_url = f"https://www.amazon.co.jp/s?k={asin}"
+        # print(f"\n🔄 Scraping ASIN: {asin}")
         driver.get(product_url)
 
         try:
@@ -87,7 +76,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
                 })
                 continue
         except:
-            pass
+            pass  # In case .s-no-outline doesn't exist
 
         try:
             product = WebDriverWait(driver, 10).until(
@@ -157,7 +146,7 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
         price_matched = False
 
         if Min_price_list[i] <= price <= Max_price_list[i] and asin_found:
-            price_matched = True
+            price_matched = True #send line notification
 
         results.append({
             "ASIN": asin,
@@ -167,6 +156,8 @@ def amazon_price_scrapper(asin_list, Min_price_list, Max_price_list, input_cooki
             "status": asin_found,
             "price matched": price_matched
         })
+
+        # print(f"✅ {asin} - {title} - ¥{price}")
 
     driver.quit()
     return results
